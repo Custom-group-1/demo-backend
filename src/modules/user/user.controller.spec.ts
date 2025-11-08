@@ -15,7 +15,7 @@ describe('user controller', () => {
       imports: [
         MikroOrmModule.forRoot({
           ...config,
-          dbName: 'mobile-demo',
+          dbName: 'mobile-demo-testing',
           allowGlobalContext: true,
         }),
         MikroOrmModule.forFeature({ entities: [User] }),
