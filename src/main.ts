@@ -29,7 +29,7 @@ function createWinstonOptions() {
   }));
 
   return {
-    level: isProduction ? 'warn' : 'info',
+    level: isProduction ? 'info' : 'debug',
     transports
   };
 }
