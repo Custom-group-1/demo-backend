@@ -12,6 +12,7 @@ import { LoggingWinston } from '@google-cloud/logging-winston';
 
 function createWinstonOptions() {
   const isProduction = process.env.NODE_ENV === 'production';
+  const useGcpCloudLogging = process.env.USE_GCP_CLOUD_LOGGING !== undefined && ['true', 'on', 'yes', '1'].includes(process.env.USE_GCP_CLOUD_LOGGING.toLowerCase());
 
   const consoleFormat = winston.format.combine(
     winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
@@ -30,7 +31,7 @@ function createWinstonOptions() {
 
   const transports: winston.transport[] = [];
 
-  if (isProduction) {
+  if (useGcpCloudLogging) {
     transports.push(new LoggingWinston());
   }
   transports.push(new winston.transports.Console({
