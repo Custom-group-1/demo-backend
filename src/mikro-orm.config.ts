@@ -1,13 +1,5 @@
 import { Logger } from '@nestjs/common';
 import { defineConfig } from '@mikro-orm/postgresql';
-import { User } from './entities/User';
-// Import the Speed Rail entities derived from 
-import { 
-  Path, Character, RelicSet, Lightcone, 
-  Move, RelicMove, LightconeMove, Effect, LightconeImposition,
-  AllowedRelic, Equip, 
-  CharacterAction, Session, SessionEntity, SessionTimeline 
-} from './entities'; 
 
 const logger = new Logger('MikroORM');
 
