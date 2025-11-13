@@ -3,7 +3,6 @@ import {
   Property, 
   PrimaryKey, 
   Enum, 
-  ManyToOne, 
   Check, 
   Opt,
   DecimalType
@@ -64,9 +63,6 @@ export class Character {
   @Property({ unique: true })
   name!: string;
 
-  @ManyToOne(() => Path)
-  path!: Path;
-
   @Property({ type: 'text', nullable: true })
   note?: string;
 }
@@ -94,9 +90,6 @@ export class Lightcone {
   @Property({ unique: true })
   name!: string;
 
-  @ManyToOne(() => Path)
-  path!: Path;
-
   @Property({ default: 1 })
   imposition: number = 1;
 
@@ -114,9 +107,6 @@ export class Move {
   @PrimaryKey()
   moveId!: number;
 
-  @ManyToOne(() => Character, { onDelete: 'cascade' })
-  character!: Character;
-
   @Enum(() => MoveType)
   moveType!: MoveType;
 
@@ -133,9 +123,6 @@ export class RelicMove {
   @PrimaryKey()
   relicMoveId!: number;
 
-  @ManyToOne(() => RelicSet, { onDelete: 'cascade' })
-  relic!: RelicSet;
-
   @Enum(() => MoveType)
   triggerMoveType!: MoveType;
 
@@ -151,9 +138,6 @@ export class RelicMove {
 export class LightconeMove {
   @PrimaryKey()
   lcMoveId!: number;
-
-  @ManyToOne(() => Lightcone, { onDelete: 'cascade' })
-  lightcone!: Lightcone;
 
   @Enum(() => MoveType)
   triggerMoveType!: MoveType;
@@ -175,15 +159,6 @@ export class LightconeMove {
 export class Effect {
   @PrimaryKey()
   effectId!: number;
-
-  @ManyToOne(() => Move, { nullable: true, onDelete: 'cascade' })
-  move?: Move;
-
-  @ManyToOne(() => RelicMove, { nullable: true, onDelete: 'cascade' })
-  relicMove?: RelicMove;
-
-  @ManyToOne(() => LightconeMove, { nullable: true, onDelete: 'cascade' })
-  lcMove?: LightconeMove;
 
   @Enum(() => EffectType)
   effectType!: EffectType;
@@ -217,9 +192,6 @@ export class LightconeImposition {
   @PrimaryKey()
   lciId!: number;
 
-  @ManyToOne(() => Lightcone, { onDelete: 'cascade' })
-  lightcone!: Lightcone;
-
   @Property()
   @Check({ expression: 'imposition BETWEEN 1 AND 5' })
   imposition!: number;
@@ -243,12 +215,6 @@ export class LightconeImposition {
 export class AllowedRelic {
   @PrimaryKey()
   allowedId!: number;
-
-  @ManyToOne(() => Character, { onDelete: 'cascade' })
-  character!: Character;
-
-  @ManyToOne(() => RelicSet, { onDelete: 'cascade' })
-  relic!: RelicSet;
 }
 
 // [cite: 14]
@@ -257,15 +223,6 @@ export class AllowedRelic {
 export class Equip {
   @PrimaryKey()
   equipId!: number;
-
-  @ManyToOne(() => Character, { onDelete: 'cascade' })
-  character!: Character;
-
-  @ManyToOne(() => RelicSet, { nullable: true })
-  relic?: RelicSet;
-
-  @ManyToOne(() => Lightcone, { nullable: true })
-  lightcone?: Lightcone;
 }
 
 // ==========================================================
@@ -277,9 +234,6 @@ export class Equip {
 export class CharacterAction {
   @PrimaryKey()
   actionId!: number;
-
-  @ManyToOne(() => Character, { onDelete: 'cascade' })
-  character!: Character;
 
   @Enum(() => MoveType)
   moveType!: MoveType;
@@ -313,12 +267,6 @@ export class SessionEntity {
   @PrimaryKey()
   entityId!: number;
 
-  @ManyToOne(() => Session, { onDelete: 'cascade' })
-  session!: Session;
-
-  @ManyToOne(() => Character, { nullable: true })
-  character?: Character;
-
   @Property({ default: false })
   isEnemy: boolean = false;
 
@@ -347,14 +295,8 @@ export class SessionTimeline {
   @PrimaryKey()
   eventId!: number;
 
-  @ManyToOne(() => Session, { onDelete: 'cascade' })
-  session!: Session;
-
   @Property({ nullable: true })
   tickNumber?: number;
-
-  @ManyToOne(() => SessionEntity, { nullable: true })
-  actingEntity?: SessionEntity;
 
   @Property({ type: DecimalType, precision: 10, scale: 4, nullable: true })
   deltaAv?: string;
@@ -364,9 +306,6 @@ export class SessionTimeline {
 
   @Property({ nullable: true })
   triggerSource?: string;
-
-  @ManyToOne(() => Effect, { nullable: true })
-  effect?: Effect;
 
   @Property({ type: 'text', nullable: true })
   description?: string;
