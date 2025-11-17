@@ -40,6 +40,27 @@ export enum EffectTarget {
   ENEMY = 'enemy',
 }
 
+@Entity({ tableName: 'users' })
+export class User {
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ unique: true })
+  username!: string;
+
+  @Property()
+  password!: string;
+
+  @Property({ nullable: true })
+  email?: string;
+
+  @Property({ onCreate: () => new Date(), nullable: true })
+  createdAt: Date & Opt = new Date();
+
+  @Property({ onUpdate: () => new Date(), nullable: true })
+  updatedAt: Date & Opt = new Date();
+}
+
 // ==========================================================
 // BASE DATA ENTITIES
 // ==========================================================

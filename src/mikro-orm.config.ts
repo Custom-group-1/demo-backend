@@ -3,6 +3,14 @@ import { defineConfig } from '@mikro-orm/postgresql';
 
 const logger = new Logger('MikroORM');
 
+import { 
+  User,
+  Path, Character, RelicSet, Lightcone,
+  Move, RelicMove, LightconeMove, Effect, LightconeImposition,
+  AllowedRelic, Equip,
+  CharacterAction, Session, SessionEntity, SessionTimeline,
+} from './entities/User';
+
 export default defineConfig({
   // Add all new entities to this array alongside User
   entities: [
