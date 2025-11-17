@@ -46,13 +46,10 @@ export class User {
   id!: number;
 
   @Property({ unique: true })
-  username!: string;
+  name!: string;
 
   @Property()
-  password!: string;
-
-  @Property({ nullable: true })
-  email?: string;
+  age!: number;
 
   @Property({ onCreate: () => new Date(), nullable: true })
   createdAt: Date & Opt = new Date();
