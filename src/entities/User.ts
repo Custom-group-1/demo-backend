@@ -49,7 +49,7 @@ export class User {
   name!: string;
 
   @Property()
-  age!: number;
+  age?: number;
 
   @Property({ onCreate: () => new Date(), nullable: true })
   createdAt: Date & Opt = new Date();
