@@ -249,6 +249,11 @@ export class AllowedRelic {
 export class Equip {
   @PrimaryKey()
   equipId!: number;
+  @Property({ nullable: true, fieldName: 'relic_id' })
+  relicId?: number;
+
+  @Property({ nullable: true, fieldName: 'lightcone_id' })
+  lightconeId?: number;
 }
 
 // ==========================================================
