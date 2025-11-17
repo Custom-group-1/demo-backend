@@ -202,6 +202,14 @@ export class Effect {
 
   @Property({ type: 'text', nullable: true })
   note?: string;
+  @Property({ nullable: true, fieldName: 'move_id' })
+  moveId?: number;
+
+  @Property({ nullable: true, fieldName: 'relic_move_id' })
+  relicMoveId?: number;
+
+  @Property({ nullable: true, fieldName: 'lc_move_id' })
+  lcMoveId?: number;
 }
 
 // [cite: 12]
