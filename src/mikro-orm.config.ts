@@ -6,9 +6,11 @@ import {
   RelicSet, Lightcone,
   Move, RelicMove, LightconeMove, Effect,
   Session, SessionEntity, SessionResource, SessionActiveEffect
-} from './entities/User'; // Ensure this path points to your User.ts file
+} from './entities/User'; 
 
 const logger = new Logger('MikroORM');
+
+const isSsl = process.env.DB_SSL === 'true';
 
 export default defineConfig({
   entities: [
@@ -19,16 +21,26 @@ export default defineConfig({
     Session, SessionEntity, SessionResource, SessionActiveEffect
   ],
   
-  dbName: 'mobile-demo',
-  port: 5432,
+  host: process.env.DB_HOST ?? '127.0.0.1',
+
+  port: parseInt(process.env.DB_PORT ?? '5432', 10),
+  dbName: process.env.DB_NAME ?? 'mobile-demo',
+  
+  user: process.env.DB_USERNAME ?? 'postgres',
+  password: process.env.DB_PASSWORD ?? 'admin',
+
   debug: true,
   logger: logger.log.bind(logger),
 
-  user: process.env.POSTGRES_USERNAME ?? 'postgres',
-  password: process.env.POSTGRES_PASSWORD ?? 'admin',
-  
-  // Allow schema generator to create tables cleanly
+  driverOptions: isSsl ? {
+    connection: {
+      ssl: {
+        rejectUnauthorized: false,
+      },
+    },
+  } : undefined,
+
   schemaGenerator: {
-    disableForeignKeys: false, // strictly enforce relationships
+    disableForeignKeys: false,
   },
 });

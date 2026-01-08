@@ -1,16 +1,17 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, NotFoundException, Param, ParseIntPipe, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, ParseIntPipe, Post, Put } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { EntityRepository, QueryOrder, wrap, EntityManager } from '@mikro-orm/postgresql';
+import { EntityRepository, QueryOrder, wrap, EntityManager } from '@mikro-orm/postgresql'; // Hoặc @mikro-orm/core tùy driver
 import { InjectRepository } from '@mikro-orm/nestjs';
-import { User } from '../../entities/User';
+import { User } from '../../entities/User'; // Import đúng đường dẫn file User khổng lồ của bạn
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserResponseDto } from './dto/user-response.dto';
 
+@ApiTags('User Management') // Thêm tag cho đẹp Swagger
 @Controller('user')
 export class UserController {
   constructor(
-    @InjectRepository(User) private readonly UserRepository: EntityRepository<User>,
+    @InjectRepository(User) private readonly userRepository: EntityRepository<User>,
     private readonly em: EntityManager,
   ) { }
 
@@ -18,12 +19,12 @@ export class UserController {
   @ApiOperation({ summary: 'List up to 20 users' })
   @ApiResponse({ status: 200, description: 'Found users', type: [UserResponseDto] })
   async find() {
-    const users = await this.UserRepository.findAll({
-      populate: ['name', 'age'],
+    const users = await this.userRepository.findAll({
+      // populate: ['name'], <-- XÓA DÒNG NÀY (Name tự động được lấy)
       orderBy: { name: QueryOrder.DESC },
       limit: 20,
     });
-    return users.map(e => new UserResponseDto(e));
+    return users.map(user => new UserResponseDto(user));
   }
 
   @Get(':id')
@@ -31,9 +32,9 @@ export class UserController {
   @ApiResponse({ status: 200, description: 'The found user', type: UserResponseDto })
   @ApiResponse({ status: 404, description: 'User not found' })
   async findOne(@Param('id', ParseIntPipe) id: number) {
-    const user = await this.UserRepository.findOne(id, {
-      populate: ['name', 'age'],
-    });
+    // SỬA QUAN TRỌNG: Truyền object điều kiện { Id: id }
+    const user = await this.userRepository.findOne({ Id: id });
+
     if (!user) {
       throw new HttpException(`User with ID ${id} not found`, HttpStatus.NOT_FOUND);
     }
@@ -43,9 +44,9 @@ export class UserController {
   @Post()
   @ApiOperation({ summary: 'Create a new user' })
   @ApiResponse({ status: 201, description: 'User created successfully', type: UserResponseDto })
-  @ApiResponse({ status: 400, description: 'Invalid input' })
   async create(@Body() createUserDto: CreateUserDto) {
-    const user = this.UserRepository.create(createUserDto);
+    // MikroORM sẽ tự map createUserDto.name vào entity
+    const user = this.userRepository.create(createUserDto);
     await this.em.flush();
 
     return new UserResponseDto(user);
@@ -54,13 +55,15 @@ export class UserController {
   @Put(':id')
   @ApiOperation({ summary: 'Update an existing user' })
   @ApiResponse({ status: 200, description: 'User updated successfully', type: UserResponseDto })
-  @ApiResponse({ status: 404, description: 'User not found' })
-  @ApiResponse({ status: 400, description: 'Invalid input' })
   async update(@Param('id', ParseIntPipe) id: number, @Body() updateUserDto: UpdateUserDto) {
-    const user = await this.UserRepository.findOne(id);
+    // SỬA: Tìm theo Id viết hoa
+    const user = await this.userRepository.findOne({ Id: id });
+    
     if (!user) {
       throw new HttpException(`User with ID ${id} not found`, HttpStatus.NOT_FOUND);
     }
+    
+    // Hàm wrap giúp update dữ liệu an toàn
     wrap(user).assign(updateUserDto);
     await this.em.flush();
 
@@ -70,13 +73,15 @@ export class UserController {
   @Delete(':id')
   @ApiOperation({ summary: 'Delete an existing user' })
   @ApiResponse({ status: 204, description: 'User deleted successfully' })
-  @ApiResponse({ status: 404, description: 'User not found' })
   @HttpCode(HttpStatus.NO_CONTENT)
   async delete(@Param('id', ParseIntPipe) id: number) {
-    const user = await this.UserRepository.findOne(id, { populate: [] });
+    // SỬA: Tìm theo Id viết hoa
+    const user = await this.userRepository.findOne({ Id: id });
+    
     if (!user) {
       throw new HttpException(`User with ID ${id} not found`, HttpStatus.NOT_FOUND);
     }
+    
     await this.em.removeAndFlush(user);
   }
 }
