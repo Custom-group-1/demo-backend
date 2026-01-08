@@ -4,52 +4,64 @@ import {
   PrimaryKey, 
   Enum, 
   Check, 
-  Opt,
-  DecimalType
+  Opt, 
+  DecimalType, 
+  ManyToOne, 
+  OneToMany, 
+  Collection, 
+  Cascade
 } from '@mikro-orm/core';
 
 // ==========================================================
-// ENUMS 
+// 1. ENUMS
 // ==========================================================
+
+export enum EntityType {
+  CHARACTER = 'character',
+  SUMMON = 'summon',       
+  ENEMY = 'enemy'
+}
 
 export enum MoveType {
   BASIC = 'basic',
   SKILL = 'skill',
-  ULT = 'ult',
+  ULT = 'ult',      
+  TECHNIQUE = 'technique',
+  MEMO_ACTION = 'memo_action'
+}
+
+export enum TraceType {
+  A2 = 'A2', 
+  A4 = 'A4', 
+  A6 = 'A6', 
   TALENT = 'talent',
-  TRACE_A1 = 'trace_a1',
-  TRACE_A2 = 'trace_a2',
-  TRACE_A3 = 'trace_a3',
-  EIDOLON_1 = 'eidolon_1',
-  EIDOLON_2 = 'eidolon_2',
-  EIDOLON_3 = 'eidolon_3',
-  EIDOLON_4 = 'eidolon_4',
-  EIDOLON_5 = 'eidolon_5',
-  EIDOLON_6 = 'eidolon_6',
 }
 
 export enum EffectType {
-  AA = 'AA',
-  SPD = 'SPD',
+  SPEED_FLAT = 'SPD_FLAT',      // Adds to total speed
+  SPEED_PERCENT = 'SPD_PERCENT',// Multiplies against computedBaseSpeed
+  ACTION_ADVANCE = 'ACTION_ADVANCE', // Forward AV
+  ACTION_DELAY = 'ACTION_DELAY', // Delay AV
+  MODIFY_RESOURCE = 'MODIFY_RESOURCE' // Grant/Consume Stacks (e.g. "Grant 3 Enhanced charges")
 }
 
-export enum EffectTarget {
-  SELF = 'self',
-  ALLY = 'ally',
-  TEAM = 'team',
-  ENEMY = 'enemy',
+export enum DurationUnit {
+  TURN = 'turn',
+  ACTION = 'action',
+  PERMANENT = 'permanent'
 }
+
+// ==========================================================
+// USER MANAGEMENT
+// ==========================================================
 
 @Entity({ tableName: 'users' })
 export class User {
   @PrimaryKey()
-  id!: number;
+  Id?: number;
 
   @Property({ unique: true })
   name!: string;
-
-  @Property()
-  age?: number;
 
   @Property({ onCreate: () => new Date(), nullable: true })
   createdAt: Date & Opt = new Date();
@@ -59,71 +71,119 @@ export class User {
 }
 
 // ==========================================================
-// BASE DATA ENTITIES
+// 2. STATIC DEFINITIONS
 // ==========================================================
 
-// [cite: 3]
 @Entity({ tableName: 'paths' })
 export class Path {
   @PrimaryKey()
-  pathId!: number;
-
+  pathId?: number;
   @Property({ unique: true })
   pathName!: string;
 }
 
-// [cite: 4]
 @Entity({ tableName: 'characters' })
 export class Character {
   @PrimaryKey()
-  characterId!: number;
+  characterId?: number;
 
   @Property({ unique: true })
   name!: string;
 
-  @Property({ type: 'text', nullable: true })
-  note?: string;
+  // Internal Base Speed (e.g. 99) used for % calculations
+  @Property({ type: DecimalType, precision: 6, scale: 2 })
+  baseSpeed!: string; 
+
+  @ManyToOne(() => Path)
+  path!: Path;
+
+  @OneToMany(() => Move, move => move.character, { cascade: [Cascade.ALL] })
+  moves = new Collection<Move>(this);
+
+  @OneToMany(() => Eidolon, eidolon => eidolon.character, { cascade: [Cascade.ALL] })
+  eidolons = new Collection<Eidolon>(this);
+
+  @OneToMany(() => Trace, trace => trace.character, { cascade: [Cascade.ALL] })
+  traces = new Collection<Trace>(this);
+
+  @OneToMany(() => SummonConfig, summon => summon.ownerCharacter, { cascade: [Cascade.ALL] })
+  summons = new Collection<SummonConfig>(this);
 }
 
-// [cite: 5]
+@Entity({ tableName: 'traces' })
+export class Trace {
+  @PrimaryKey()
+  traceId?: number;
+  @ManyToOne(() => Character)
+  character!: Character;
+  @Enum(() => TraceType)
+  type!: TraceType;
+  @Property({ type: 'text', nullable: true })
+  description?: string;
+  @OneToMany(() => Effect, effect => effect.trace)
+  effects = new Collection<Effect>(this);
+}
+
+@Entity({ tableName: 'eidolons' })
+export class Eidolon {
+  @PrimaryKey()
+  eidolonId?: number;
+  @ManyToOne(() => Character)
+  character!: Character;
+  @Property()
+  @Check({ expression: 'rank BETWEEN 1 AND 6' })
+  rank!: number; 
+  @OneToMany(() => Effect, effect => effect.eidolon)
+  effects = new Collection<Effect>(this);
+}
+
+@Entity({ tableName: 'summon_configs' })
+export class SummonConfig {
+  @PrimaryKey()
+  summonConfigId?: number;
+  @ManyToOne(() => Character)
+  ownerCharacter!: Character;
+  @Property()
+  name!: string; 
+  @Property({ type: DecimalType, precision: 6, scale: 2 })
+  baseSpeed!: string; 
+  @Property({ default: false })
+  isFixedSpeed: boolean = false; 
+}
+
 @Entity({ tableName: 'relic_sets' })
 export class RelicSet {
   @PrimaryKey()
-  relicId!: number;
-
+  relicId?: number;
   @Property({ unique: true })
   name!: string;
-
-  @Property({ type: 'text', nullable: true })
-  note?: string;
+  @OneToMany(() => RelicMove, rm => rm.relicSet)
+  effects = new Collection<RelicMove>(this);
 }
 
-// [cite: 6]
 @Entity({ tableName: 'lightcones' })
-@Check({ expression: 'imposition BETWEEN 1 AND 5' })
 export class Lightcone {
   @PrimaryKey()
-  lightconeId!: number;
-
+  lightconeId?: number;
   @Property({ unique: true })
   name!: string;
-
-  @Property({ default: 1 })
-  imposition: number = 1;
-
-  @Property({ type: 'text', nullable: true })
-  note?: string;
+  @ManyToOne(() => Path)
+  path!: Path;
+  @OneToMany(() => LightconeMove, lm => lm.lightcone)
+  effects = new Collection<LightconeMove>(this);
 }
 
 // ==========================================================
-// MOVES
+// 3. MOVES (Actions)
 // ==========================================================
 
-// [cite: 7]
 @Entity({ tableName: 'moves' })
 export class Move {
   @PrimaryKey()
-  moveId!: number;
+  moveId?: number;
+
+  @ManyToOne(() => Character)
+  character!: Character;
 
   @Enum(() => MoveType)
   moveType!: MoveType;
@@ -131,96 +191,53 @@ export class Move {
   @Property({ nullable: true })
   moveName?: string;
 
-  @Property({ type: 'text', nullable: true })
-  moveNote?: string;
+  // [UPDATED] Replaced Level Enum with Boolean
+  // Does this count as an "Enhanced" move? (Triggers Herta E2, etc.)
+  @Property({ default: false })
+  isEnhanced: boolean = false;
+
+  // Does this move require a resource to be used? (e.g. "blade_enhanced_state")
+  @Property({ nullable: true })
+  resourceCostName?: string; 
+
+  @Property({ default: 0 })
+  resourceCostAmount: number = 0;
+
+  @OneToMany(() => Effect, effect => effect.move)
+  effects = new Collection<Effect>(this);
 }
 
-// [cite: 8]
 @Entity({ tableName: 'relic_moves' })
 export class RelicMove {
   @PrimaryKey()
-  relicMoveId!: number;
-
-  @Enum(() => MoveType)
-  triggerMoveType!: MoveType;
-
-  @Property({ default: 'any' })
-  triggerTargetCondition: string = 'any';
-
-  @Property({ nullable: true })
-  moveName?: string;
+  relicMoveId?: number;
+  @ManyToOne(() => RelicSet)
+  relicSet!: RelicSet;
+  @Property()
+  pieceRequirement!: number;
+  @OneToMany(() => Effect, effect => effect.relicMove)
+  effects = new Collection<Effect>(this);
 }
 
-// [cite: 9]
 @Entity({ tableName: 'lightcone_moves' })
 export class LightconeMove {
   @PrimaryKey()
-  lcMoveId!: number;
-
-  @Enum(() => MoveType)
-  triggerMoveType!: MoveType;
-
-  @Property({ default: 'any' })
-  triggerTargetCondition: string = 'any';
-
-  @Property({ nullable: true })
-  moveName?: string;
+  lcMoveId?: number;
+  @ManyToOne(() => Lightcone)
+  lightcone!: Lightcone;
+  @OneToMany(() => Effect, effect => effect.lcMove)
+  effects = new Collection<Effect>(this);
 }
 
 // ==========================================================
-// EFFECTS
+// 4. EFFECTS (Rules)
 // ==========================================================
 
-// [cite: 10, 11]
 @Entity({ tableName: 'effects' })
-@Check({ expression: '(move_id IS NOT NULL)::int + (relic_move_id IS NOT NULL)::int + (lc_move_id IS NOT NULL)::int = 1' })
+@Check({ expression: '(move_id IS NOT NULL)::int + (relic_move_id IS NOT NULL)::int + (lc_move_id IS NOT NULL)::int + (eidolon_id IS NOT NULL)::int + (trace_id IS NOT NULL)::int = 1' })
 export class Effect {
   @PrimaryKey()
-  effectId!: number;
-
-  @Enum(() => EffectType)
-  effectType!: EffectType;
-
-  @Property({ type: DecimalType, precision: 6, scale: 2, nullable: true })
-  effectValue?: string;
-
-  @Property({ default: true })
-  valueIsPercent: boolean = true;
-
-  @Enum({ items: () => EffectTarget, default: EffectTarget.SELF })
-  effectTarget: EffectTarget = EffectTarget.SELF;
-
-  @Property({ nullable: true })
-  duration?: string;
-
-  @Property({ nullable: true })
-  triggerCondition?: string;
-
-  @Property()
-  @Check({ expression: "source_origin IN ('character', 'relic', 'lightcone')" })
-  sourceOrigin!: string;
-
-  @Property({ type: 'text', nullable: true })
-  note?: string;
-  @Property({ nullable: true, fieldName: 'move_id' })
-  moveId?: number;
-
-  @Property({ nullable: true, fieldName: 'relic_move_id' })
-  relicMoveId?: number;
-
-  @Property({ nullable: true, fieldName: 'lc_move_id' })
-  lcMoveId?: number;
-}
-
-// [cite: 12]
-@Entity({ tableName: 'lightcone_impositions' })
-export class LightconeImposition {
-  @PrimaryKey()
-  lciId!: number;
-
-  @Property()
-  @Check({ expression: 'imposition BETWEEN 1 AND 5' })
-  imposition!: number;
+  effectId?: number;
 
   @Enum(() => EffectType)
   effectType!: EffectType;
@@ -228,55 +245,43 @@ export class LightconeImposition {
   @Property({ type: DecimalType, precision: 6, scale: 2 })
   effectValue!: string;
 
-  @Property({ default: true })
-  valueIsPercent: boolean = true;
+  @Property({ nullable: true })
+  resourceName?: string;
+
+  @Property({ default: 1 })
+  maxStacks: number = 1;
+
+  @Property({ nullable: true })
+  durationValue?: number;
+
+  @Enum(() => DurationUnit)
+  durationUnit?: DurationUnit;
+
+  @Property({ nullable: true })
+  triggerCondition?: string;
+
+  // --- ENSURE ALL THESE HAVE THE "name" PROPERTY ---
+
+  @ManyToOne(() => Move, { nullable: true, name: 'move_id' })
+  move?: Move;
+
+  @ManyToOne(() => RelicMove, { nullable: true, name: 'relic_move_id' })
+  relicMove?: RelicMove;
+
+  @ManyToOne(() => LightconeMove, { nullable: true, name: 'lc_move_id' })
+  lcMove?: LightconeMove;
+
+  @ManyToOne(() => Eidolon, { nullable: true, name: 'eidolon_id' })
+  eidolon?: Eidolon;
+
+  @ManyToOne(() => Trace, { nullable: true, name: 'trace_id' })
+  trace?: Trace;
 }
 
 // ==========================================================
-// EQUIPS
+// 5. SIMULATION STATE
 // ==========================================================
 
-// [cite: 13]
-@Entity({ tableName: 'allowed_relics' })
-export class AllowedRelic {
-  @PrimaryKey()
-  allowedId!: number;
-}
-
-// [cite: 14]
-@Entity({ tableName: 'equips' })
-@Check({ expression: 'relic_id IS NOT NULL OR lightcone_id IS NOT NULL' })
-export class Equip {
-  @PrimaryKey()
-  equipId!: number;
-  @Property({ nullable: true, fieldName: 'relic_id' })
-  relicId?: number;
-
-  @Property({ nullable: true, fieldName: 'lightcone_id' })
-  lightconeId?: number;
-}
-
-// ==========================================================
-// SIMULATION / SESSION
-// ==========================================================
-
-// [cite: 21]
-@Entity({ tableName: 'character_actions' })
-export class CharacterAction {
-  @PrimaryKey()
-  actionId!: number;
-
-  @Enum(() => MoveType)
-  moveType!: MoveType;
-
-  @Property({ default: 'any' })
-  targetCondition: string = 'any';
-
-  @Property({ onCreate: () => new Date() })
-  actionTimestamp: Date & Opt = new Date();
-}
-
-// [cite: 22]
 @Entity({ tableName: 'sessions' })
 export class Session {
   @PrimaryKey({ type: 'uuid', defaultRaw: 'gen_random_uuid()' })
@@ -285,62 +290,71 @@ export class Session {
   @Property({ nullable: true })
   sessionName?: string;
 
-  @Property({ nullable: true })
-  createdBy?: string;
-
-  @Property({ onCreate: () => new Date(), nullable: true })
-  createdAt: Date & Opt = new Date();
+  @OneToMany(() => SessionEntity, se => se.session)
+  entities = new Collection<SessionEntity>(this);
 }
 
-// [cite: 23]
 @Entity({ tableName: 'session_entities' })
 export class SessionEntity {
   @PrimaryKey()
-  entityId!: number;
+  entityId?: number;
 
-  @Property({ default: false })
-  isEnemy: boolean = false;
+  @ManyToOne(() => Session)
+  session!: Session;
 
-  @Property({ type: DecimalType, precision: 6, scale: 2, nullable: true })
-  baseSpd?: string;
+  @Enum(() => EntityType)
+  type!: EntityType; 
 
-  @Property({ type: DecimalType, precision: 6, scale: 2, nullable: true })
-  currentSpd?: string;
+  @ManyToOne(() => Character, { nullable: true })
+  sourceCharacter?: Character;
+  @ManyToOne(() => SummonConfig, { nullable: true })
+  sourceSummon?: SummonConfig;
+  @ManyToOne(() => SessionEntity, { nullable: true })
+  masterEntity?: SessionEntity;
 
-  @Property({ type: DecimalType, precision: 6, scale: 2, default: 0 })
-  currentEnergy: string = '0';
+  // 1. Screen Speed (The "Floor" input by user)
+  @Property({ type: DecimalType, precision: 6, scale: 2 })
+  initialDisplaySpeed!: string; 
 
-  @Property({ type: DecimalType, precision: 6, scale: 2, default: 100 })
-  maxEnergy: string = '100';
+  // 2. Base Speed (Hidden, for % math)
+  @Property({ type: DecimalType, precision: 6, scale: 2 })
+  computedBaseSpeed!: string;
 
   @Property({ type: DecimalType, precision: 10, scale: 4, default: 0 })
   currentActionValue: string = '0';
 
-  @Property({ type: 'text', nullable: true })
-  note?: string;
+  @OneToMany(() => SessionActiveEffect, ae => ae.targetEntity)
+  activeEffects = new Collection<SessionActiveEffect>(this);
+
+  // Tracks things like "blade_enhanced_state" stacks
+  @OneToMany(() => SessionResource, sr => sr.entity)
+  resources = new Collection<SessionResource>(this);
 }
 
-// [cite: 24]
-@Entity({ tableName: 'session_timeline' })
-export class SessionTimeline {
+@Entity({ tableName: 'session_resources' })
+export class SessionResource {
   @PrimaryKey()
-  eventId!: number;
+  resourceId?: number;
+  @ManyToOne(() => SessionEntity)
+  entity!: SessionEntity;
+  @Property()
+  resourceName!: string; 
+  @Property({ type: 'integer', default: 0 })
+  value: number = 0;
+}
 
+@Entity({ tableName: 'session_active_effects' })
+export class SessionActiveEffect {
+  @PrimaryKey()
+  activeEffectId?: number;
+  @ManyToOne(() => SessionEntity)
+  targetEntity!: SessionEntity;
+  @ManyToOne(() => Effect)
+  sourceEffect!: Effect;
+  @Property({ default: 1 })
+  currentStacks: number = 1;
   @Property({ nullable: true })
-  tickNumber?: number;
-
-  @Property({ type: DecimalType, precision: 10, scale: 4, nullable: true })
-  deltaAv?: string;
-
-  @Property({ type: DecimalType, precision: 6, scale: 2, nullable: true })
-  deltaEnergy?: string;
-
-  @Property({ nullable: true })
-  triggerSource?: string;
-
-  @Property({ type: 'text', nullable: true })
-  description?: string;
-
-  @Property({ onCreate: () => new Date(), nullable: true })
-  createdAt: Date & Opt = new Date();
+  turnsRemaining?: number;
+  @Property({ type: DecimalType, precision: 10, scale: 4 })
+  snapshotValue!: string; 
 }
