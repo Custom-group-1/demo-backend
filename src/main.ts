@@ -62,6 +62,12 @@ async function bootstrap() {
     .setDescription('API documentation for Mobile Application Development demo')
     .setVersion('1.0')
     .addTag('user')
+    .addTag('character')
+    .addTag('path')
+    .addTag('lightcone')
+    .addTag('relic-set')
+    .addTag('move')
+    .addTag('effect')
     .build();
 
   const document = SwaggerModule.createDocument(app, swaggerConfig);
