@@ -21,7 +21,7 @@ export class TeamMemberResponseDto {
     this.memberId = member.memberId!;
     this.slotIndex = member.slotIndex;
     this.inputSpeed = Number(member.inputSpeed);
-    this.characterName = member.character.name;
+    this.characterName = member.character!.name;
     this.lightconeName = member.lightcone ? member.lightcone.name : null;
   }
 }

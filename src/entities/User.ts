@@ -312,7 +312,7 @@ export class TeamPreset {
 @Entity({ tableName: 'team_members' })
 export class TeamMember {
   @PrimaryKey()
-  teamMemberId?: number;
+  memberId!: number;
 
   @ManyToOne(() => TeamPreset, { name: 'preset_preset_id' })
   teamPreset!: TeamPreset;
