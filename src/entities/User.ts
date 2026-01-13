@@ -63,11 +63,17 @@ export class User {
   @Property({ unique: true })
   name!: string;
 
+  @Property()
+  password!: string; // Should be hashed in production
+
   @Property({ onCreate: () => new Date(), nullable: true })
   createdAt: Date & Opt = new Date();
 
   @Property({ onUpdate: () => new Date(), nullable: true })
   updatedAt: Date & Opt = new Date();
+
+  @OneToMany(() => TeamPreset, preset => preset.user, { cascade: [Cascade.ALL] })
+  teamPresets = new Collection<TeamPreset>(this);
 }
 
 // ==========================================================
@@ -276,6 +282,52 @@ export class Effect {
 
   @ManyToOne(() => Trace, { nullable: true, name: 'trace_id' })
   trace?: Trace;
+}
+
+// ==========================================================
+// 4. TEAM PRESETS (User-saved team configurations)
+// ==========================================================
+
+@Entity({ tableName: 'team_presets' })
+export class TeamPreset {
+  @PrimaryKey()
+  presetId?: number;
+
+  @ManyToOne(() => User, { name: 'user_id', nullable: true })
+  user?: User;
+
+  @Property()
+  name!: string; // e.g. "Hypercarry Seele"
+
+  @Property({ onCreate: () => new Date(), nullable: true })
+  createdAt: Date & Opt = new Date();
+
+  @Property({ onUpdate: () => new Date(), nullable: true })
+  updatedAt: Date & Opt = new Date();
+
+  @OneToMany(() => TeamMember, member => member.teamPreset, { cascade: [Cascade.ALL] })
+  members = new Collection<TeamMember>(this);
+}
+
+@Entity({ tableName: 'team_members' })
+export class TeamMember {
+  @PrimaryKey()
+  teamMemberId?: number;
+
+  @ManyToOne(() => TeamPreset, { name: 'preset_preset_id' })
+  teamPreset!: TeamPreset;
+
+  @Property()
+  slotIndex!: number; // 1-4 position in team
+
+  @ManyToOne(() => Character, { name: 'character_character_id', nullable: true })
+  character?: Character;
+
+  @ManyToOne(() => Lightcone, { name: 'lightcone_lightcone_id', nullable: true })
+  lightcone?: Lightcone;
+
+  @Property({ type: DecimalType, precision: 6, scale: 2 })
+  inputSpeed!: string; // User's previously input speed
 }
 
 // ==========================================================

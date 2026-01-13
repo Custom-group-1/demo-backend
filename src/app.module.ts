@@ -10,6 +10,7 @@ import { LightconeModule } from './modules/lightcone/lightcone.module';
 import { RelicSetModule } from './modules/relic-set/relic-set.module';
 import { MoveModule } from './modules/move/move.module';
 import { EffectModule } from './modules/effect/effect.module';
+import { TeamPresetModule } from './modules/team-preset/team-preset.module';
 
 @Module({
   imports: [
@@ -20,7 +21,8 @@ import { EffectModule } from './modules/effect/effect.module';
     LightconeModule,
     RelicSetModule,
     MoveModule,
-    EffectModule
+    EffectModule,
+    TeamPresetModule
   ],
   controllers: [AppController, UserController],
   providers: [AppService, Logger],
