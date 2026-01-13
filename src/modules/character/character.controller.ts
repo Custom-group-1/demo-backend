@@ -6,7 +6,7 @@ import { Character } from '../../entities/User';
 import { CharacterResponseDto } from './dto/character-response.dto';
 
 @ApiTags('Character Management')
-@Controller('character')
+@Controller('characters')
 export class CharacterController {
   constructor(
     @InjectRepository(Character) private readonly characterRepository: EntityRepository<Character>,

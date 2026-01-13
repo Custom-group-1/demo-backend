@@ -57,6 +57,8 @@ async function bootstrap() {
     forbidNonWhitelisted: true,
   }));
 
+  app.setGlobalPrefix('api');
+
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Mobile Demo API')
     .setDescription('API documentation for Mobile Application Development demo')

@@ -1,3 +1,4 @@
+import 'dotenv/config'; // Load environment variables
 import { Logger } from '@nestjs/common';
 import { defineConfig } from '@mikro-orm/postgresql';
 import { 
