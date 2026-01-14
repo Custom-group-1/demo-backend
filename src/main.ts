@@ -63,7 +63,7 @@ async function bootstrap() {
     }),
   );
 
-  app.setGlobalPrefix('api', { exclude: ['ip'] });
+  app.setGlobalPrefix('api', { exclude: ['ip', 'auth'] });
 
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Mobile Demo API')
@@ -84,3 +84,4 @@ async function bootstrap() {
   await app.listen(process.env.PORT ?? 3000, '0.0.0.0');
 }
 bootstrap();
+
