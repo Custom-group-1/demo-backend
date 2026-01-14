@@ -63,6 +63,9 @@ export class User {
   @Property({ unique: true })
   name!: string;
 
+  @Property({ unique: true })
+  email!: string;
+
   @Property()
   password!: string; // Should be hashed in production
 
