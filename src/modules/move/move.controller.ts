@@ -1,6 +1,18 @@
-import { Controller, Get, HttpException, HttpStatus, Param, ParseIntPipe, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  HttpException,
+  HttpStatus,
+  Param,
+  ParseIntPipe,
+  Query,
+} from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags, ApiQuery } from '@nestjs/swagger';
-import { EntityRepository, QueryOrder, FilterQuery } from '@mikro-orm/postgresql';
+import {
+  EntityRepository,
+  QueryOrder,
+  FilterQuery,
+} from '@mikro-orm/postgresql';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { Move, MoveType } from '../../entities/User';
 import { MoveResponseDto } from './dto/move-response.dto';
@@ -9,12 +21,17 @@ import { MoveResponseDto } from './dto/move-response.dto';
 @Controller('move')
 export class MoveController {
   constructor(
-    @InjectRepository(Move) private readonly moveRepository: EntityRepository<Move>,
-  ) { }
+    @InjectRepository(Move)
+    private readonly moveRepository: EntityRepository<Move>,
+  ) {}
 
   @Get()
   @ApiOperation({ summary: 'List all moves' })
-  @ApiResponse({ status: 200, description: 'Found moves', type: [MoveResponseDto] })
+  @ApiResponse({
+    status: 200,
+    description: 'Found moves',
+    type: [MoveResponseDto],
+  })
   @ApiQuery({ name: 'characterId', required: false, type: Number })
   @ApiQuery({ name: 'moveType', required: false, enum: MoveType })
   async find(
@@ -35,18 +52,28 @@ export class MoveController {
       populate: ['character'],
       orderBy: { moveId: QueryOrder.ASC },
     });
-    return moves.map(move => new MoveResponseDto(move));
+    return moves.map((move) => new MoveResponseDto(move));
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Get a single move by ID' })
-  @ApiResponse({ status: 200, description: 'The found move', type: MoveResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'The found move',
+    type: MoveResponseDto,
+  })
   @ApiResponse({ status: 404, description: 'Move not found' })
   async findOne(@Param('id', ParseIntPipe) id: number) {
-    const move = await this.moveRepository.findOne({ moveId: id }, { populate: ['character'] });
+    const move = await this.moveRepository.findOne(
+      { moveId: id },
+      { populate: ['character'] },
+    );
 
     if (!move) {
-      throw new HttpException(`Move with ID ${id} not found`, HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        `Move with ID ${id} not found`,
+        HttpStatus.NOT_FOUND,
+      );
     }
     return new MoveResponseDto(move);
   }

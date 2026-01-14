@@ -19,7 +19,7 @@ export class AuthService {
     const user = await this.userRepository.findOne({ email });
 
     if (user && user.password && user.password === pass) {
-      const { password, ...result } = user;
+      const { password: _, ...result } = user;
       return result;
     }
     return null;
@@ -28,34 +28,36 @@ export class AuthService {
   // 2. Login - Generates JWT
   async login(loginDto: LoginDto) {
     const user = await this.validateUser(loginDto.email, loginDto.password);
-    
+
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
     const payload = { username: user.name, sub: user.Id };
-    
+
     return {
       access_token: this.jwtService.sign(payload),
       user: {
         id: user.Id,
-        name: user.name
-      }
+        name: user.name,
+      },
     };
   }
 
   // 3. Register - Creates user via standard repo calls
   async register(createUserDto: CreateUserDto) {
     // FIX: Check if email already exists (since that's what we log in with)
-    const existing = await this.userRepository.findOne({ email: createUserDto.email });
+    const existing = await this.userRepository.findOne({
+      email: createUserDto.email,
+    });
     if (existing) {
       throw new UnauthorizedException('Email already exists');
     }
 
     const user = this.userRepository.create(createUserDto);
     await this.userRepository.getEntityManager().flush();
-    
+
     // FIX: Pass 'email' instead of 'name' to match the new LoginDto
-    return this.login({ email: user.email, password: user.password! });
+    return this.login({ email: user.email, password: user.password });
   }
 }

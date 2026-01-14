@@ -13,6 +13,8 @@ export class AppController {
 
   @Get('ip')
   getIp(@Req() request: Request): string {
-    return request.ip || (request as any).connection?.remoteAddress || 'unknown';
+    return (
+      request.ip || (request as any).connection?.remoteAddress || 'unknown'
+    );
   }
 }

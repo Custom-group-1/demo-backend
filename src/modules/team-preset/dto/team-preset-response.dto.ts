@@ -43,6 +43,8 @@ export class TeamPresetResponseDto {
     this.presetId = preset.presetId!;
     this.name = preset.name;
     this.username = preset.user ? preset.user.name : null;
-    this.members = preset.members.getItems().map(m => new TeamMemberResponseDto(m));
+    this.members = preset.members
+      .getItems()
+      .map((m) => new TeamMemberResponseDto(m));
   }
 }

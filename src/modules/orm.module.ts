@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 
-import { User } from "../entities/User";
+import { User } from '../entities/User';
 
 @Module({
   imports: [
@@ -12,4 +12,4 @@ import { User } from "../entities/User";
   ],
   exports: [MikroOrmModule],
 })
-export class OrmModule { }
+export class OrmModule {}

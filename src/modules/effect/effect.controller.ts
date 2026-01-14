@@ -1,6 +1,18 @@
-import { Controller, Get, HttpException, HttpStatus, Param, ParseIntPipe, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  HttpException,
+  HttpStatus,
+  Param,
+  ParseIntPipe,
+  Query,
+} from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags, ApiQuery } from '@nestjs/swagger';
-import { EntityRepository, QueryOrder, FilterQuery } from '@mikro-orm/postgresql';
+import {
+  EntityRepository,
+  QueryOrder,
+  FilterQuery,
+} from '@mikro-orm/postgresql';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { Effect, EffectType } from '../../entities/User';
 import { EffectResponseDto } from './dto/effect-response.dto';
@@ -9,12 +21,17 @@ import { EffectResponseDto } from './dto/effect-response.dto';
 @Controller('effect')
 export class EffectController {
   constructor(
-    @InjectRepository(Effect) private readonly effectRepository: EntityRepository<Effect>,
-  ) { }
+    @InjectRepository(Effect)
+    private readonly effectRepository: EntityRepository<Effect>,
+  ) {}
 
   @Get()
   @ApiOperation({ summary: 'List all effects' })
-  @ApiResponse({ status: 200, description: 'Found effects', type: [EffectResponseDto] })
+  @ApiResponse({
+    status: 200,
+    description: 'Found effects',
+    type: [EffectResponseDto],
+  })
   @ApiQuery({ name: 'effectType', required: false, enum: EffectType })
   @ApiQuery({ name: 'sourceType', required: false, type: String })
   @ApiQuery({ name: 'sourceId', required: false, type: Number })
@@ -23,7 +40,7 @@ export class EffectController {
     @Query('sourceType') sourceType?: string,
     @Query('sourceId') sourceId?: string,
   ) {
-    let where: FilterQuery<Effect> = {};
+    const where: FilterQuery<Effect> = {};
 
     if (effectType) {
       where.effectType = effectType;
@@ -54,20 +71,30 @@ export class EffectController {
       populate: ['move', 'relicMove', 'lcMove', 'eidolon', 'trace'],
       orderBy: { effectId: QueryOrder.ASC },
     });
-    return effects.map(effect => new EffectResponseDto(effect));
+    return effects.map((effect) => new EffectResponseDto(effect));
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Get a single effect by ID' })
-  @ApiResponse({ status: 200, description: 'The found effect', type: EffectResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'The found effect',
+    type: EffectResponseDto,
+  })
   @ApiResponse({ status: 404, description: 'Effect not found' })
   async findOne(@Param('id', ParseIntPipe) id: number) {
-    const effect = await this.effectRepository.findOne({ effectId: id }, {
-      populate: ['move', 'relicMove', 'lcMove', 'eidolon', 'trace']
-    });
+    const effect = await this.effectRepository.findOne(
+      { effectId: id },
+      {
+        populate: ['move', 'relicMove', 'lcMove', 'eidolon', 'trace'],
+      },
+    );
 
     if (!effect) {
-      throw new HttpException(`Effect with ID ${id} not found`, HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        `Effect with ID ${id} not found`,
+        HttpStatus.NOT_FOUND,
+      );
     }
     return new EffectResponseDto(effect);
   }

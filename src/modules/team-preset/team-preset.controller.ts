@@ -1,4 +1,11 @@
-import { Controller, Get, HttpException, HttpStatus, Param, ParseIntPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  HttpException,
+  HttpStatus,
+  Param,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { EntityRepository, QueryOrder } from '@mikro-orm/postgresql';
 import { InjectRepository } from '@mikro-orm/nestjs';
@@ -9,8 +16,9 @@ import { TeamPresetResponseDto } from './dto/team-preset-response.dto';
 @Controller('team-presets')
 export class TeamPresetController {
   constructor(
-    @InjectRepository(TeamPreset) private readonly teamPresetRepository: EntityRepository<TeamPreset>,
-  ) { }
+    @InjectRepository(TeamPreset)
+    private readonly teamPresetRepository: EntityRepository<TeamPreset>,
+  ) {}
 
   @Get()
   @ApiOperation({ summary: 'List all team presets' })
@@ -20,7 +28,7 @@ export class TeamPresetController {
       populate: ['members', 'members.character', 'members.lightcone', 'user'],
       orderBy: { presetId: QueryOrder.ASC },
     });
-    return presets.map(preset => new TeamPresetResponseDto(preset));
+    return presets.map((preset) => new TeamPresetResponseDto(preset));
   }
 
   @Get(':id')
@@ -29,13 +37,14 @@ export class TeamPresetController {
   async findOne(@Param('id', ParseIntPipe) id: number) {
     const preset = await this.teamPresetRepository.findOne(
       { presetId: id },
-      { 
+      {
         populate: ['members', 'members.character', 'members.lightcone', 'user'],
-        orderBy: { members: { slotIndex: QueryOrder.ASC } }
-      }
+        orderBy: { members: { slotIndex: QueryOrder.ASC } },
+      },
     );
 
-    if (!preset) throw new HttpException(`Preset ${id} not found`, HttpStatus.NOT_FOUND);
+    if (!preset)
+      throw new HttpException(`Preset ${id} not found`, HttpStatus.NOT_FOUND);
     return new TeamPresetResponseDto(preset);
   }
 }

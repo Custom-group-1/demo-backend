@@ -1,15 +1,15 @@
-import { 
-  Entity, 
-  Property, 
-  PrimaryKey, 
-  Enum, 
-  Check, 
-  Opt, 
-  DecimalType, 
-  ManyToOne, 
-  OneToMany, 
-  Collection, 
-  Cascade
+import {
+  Entity,
+  Property,
+  PrimaryKey,
+  Enum,
+  Check,
+  Opt,
+  DecimalType,
+  ManyToOne,
+  OneToMany,
+  Collection,
+  Cascade,
 } from '@mikro-orm/core';
 
 // ==========================================================
@@ -18,37 +18,37 @@ import {
 
 export enum EntityType {
   CHARACTER = 'character',
-  SUMMON = 'summon',       
-  ENEMY = 'enemy'
+  SUMMON = 'summon',
+  ENEMY = 'enemy',
 }
 
 export enum MoveType {
   BASIC = 'basic',
   SKILL = 'skill',
-  ULT = 'ult',      
+  ULT = 'ult',
   TECHNIQUE = 'technique',
-  MEMO_ACTION = 'memo_action'
+  MEMO_ACTION = 'memo_action',
 }
 
 export enum TraceType {
-  A2 = 'A2', 
-  A4 = 'A4', 
-  A6 = 'A6', 
+  A2 = 'A2',
+  A4 = 'A4',
+  A6 = 'A6',
   TALENT = 'talent',
 }
 
 export enum EffectType {
-  SPEED_FLAT = 'SPD_FLAT',      // Adds to total speed
-  SPEED_PERCENT = 'SPD_PERCENT',// Multiplies against computedBaseSpeed
+  SPEED_FLAT = 'SPD_FLAT', // Adds to total speed
+  SPEED_PERCENT = 'SPD_PERCENT', // Multiplies against computedBaseSpeed
   ACTION_ADVANCE = 'ACTION_ADVANCE', // Forward AV
   ACTION_DELAY = 'ACTION_DELAY', // Delay AV
-  MODIFY_RESOURCE = 'MODIFY_RESOURCE' // Grant/Consume Stacks (e.g. "Grant 3 Enhanced charges")
+  MODIFY_RESOURCE = 'MODIFY_RESOURCE', // Grant/Consume Stacks (e.g. "Grant 3 Enhanced charges")
 }
 
 export enum DurationUnit {
   TURN = 'turn',
   ACTION = 'action',
-  PERMANENT = 'permanent'
+  PERMANENT = 'permanent',
 }
 
 // ==========================================================
@@ -75,7 +75,9 @@ export class User {
   @Property({ onUpdate: () => new Date(), nullable: true })
   updatedAt: Date & Opt = new Date();
 
-  @OneToMany(() => TeamPreset, preset => preset.user, { cascade: [Cascade.ALL] })
+  @OneToMany(() => TeamPreset, (preset) => preset.user, {
+    cascade: [Cascade.ALL],
+  })
   teamPresets = new Collection<TeamPreset>(this);
 }
 
@@ -101,21 +103,27 @@ export class Character {
 
   // Internal Base Speed (e.g. 99) used for % calculations
   @Property({ type: DecimalType, precision: 6, scale: 2 })
-  baseSpeed!: string; 
+  baseSpeed!: string;
 
   @ManyToOne(() => Path)
   path!: Path;
 
-  @OneToMany(() => Move, move => move.character, { cascade: [Cascade.ALL] })
+  @OneToMany(() => Move, (move) => move.character, { cascade: [Cascade.ALL] })
   moves = new Collection<Move>(this);
 
-  @OneToMany(() => Eidolon, eidolon => eidolon.character, { cascade: [Cascade.ALL] })
+  @OneToMany(() => Eidolon, (eidolon) => eidolon.character, {
+    cascade: [Cascade.ALL],
+  })
   eidolons = new Collection<Eidolon>(this);
 
-  @OneToMany(() => Trace, trace => trace.character, { cascade: [Cascade.ALL] })
+  @OneToMany(() => Trace, (trace) => trace.character, {
+    cascade: [Cascade.ALL],
+  })
   traces = new Collection<Trace>(this);
 
-  @OneToMany(() => SummonConfig, summon => summon.ownerCharacter, { cascade: [Cascade.ALL] })
+  @OneToMany(() => SummonConfig, (summon) => summon.ownerCharacter, {
+    cascade: [Cascade.ALL],
+  })
   summons = new Collection<SummonConfig>(this);
 }
 
@@ -129,7 +137,7 @@ export class Trace {
   type!: TraceType;
   @Property({ type: 'text', nullable: true })
   description?: string;
-  @OneToMany(() => Effect, effect => effect.trace)
+  @OneToMany(() => Effect, (effect) => effect.trace)
   effects = new Collection<Effect>(this);
 }
 
@@ -141,8 +149,8 @@ export class Eidolon {
   character!: Character;
   @Property()
   @Check({ expression: 'rank BETWEEN 1 AND 6' })
-  rank!: number; 
-  @OneToMany(() => Effect, effect => effect.eidolon)
+  rank!: number;
+  @OneToMany(() => Effect, (effect) => effect.eidolon)
   effects = new Collection<Effect>(this);
 }
 
@@ -153,11 +161,11 @@ export class SummonConfig {
   @ManyToOne(() => Character)
   ownerCharacter!: Character;
   @Property()
-  name!: string; 
+  name!: string;
   @Property({ type: DecimalType, precision: 6, scale: 2 })
-  baseSpeed!: string; 
+  baseSpeed!: string;
   @Property({ default: false })
-  isFixedSpeed: boolean = false; 
+  isFixedSpeed: boolean = false;
 }
 
 @Entity({ tableName: 'relic_sets' })
@@ -166,7 +174,7 @@ export class RelicSet {
   relicId?: number;
   @Property({ unique: true })
   name!: string;
-  @OneToMany(() => RelicMove, rm => rm.relicSet)
+  @OneToMany(() => RelicMove, (rm) => rm.relicSet)
   effects = new Collection<RelicMove>(this);
 }
 
@@ -178,7 +186,7 @@ export class Lightcone {
   name!: string;
   @ManyToOne(() => Path)
   path!: Path;
-  @OneToMany(() => LightconeMove, lm => lm.lightcone)
+  @OneToMany(() => LightconeMove, (lm) => lm.lightcone)
   effects = new Collection<LightconeMove>(this);
 }
 
@@ -207,12 +215,12 @@ export class Move {
 
   // Does this move require a resource to be used? (e.g. "blade_enhanced_state")
   @Property({ nullable: true })
-  resourceCostName?: string; 
+  resourceCostName?: string;
 
   @Property({ default: 0 })
   resourceCostAmount: number = 0;
 
-  @OneToMany(() => Effect, effect => effect.move)
+  @OneToMany(() => Effect, (effect) => effect.move)
   effects = new Collection<Effect>(this);
 }
 
@@ -224,7 +232,7 @@ export class RelicMove {
   relicSet!: RelicSet;
   @Property()
   pieceRequirement!: number;
-  @OneToMany(() => Effect, effect => effect.relicMove)
+  @OneToMany(() => Effect, (effect) => effect.relicMove)
   effects = new Collection<Effect>(this);
 }
 
@@ -234,7 +242,7 @@ export class LightconeMove {
   lcMoveId?: number;
   @ManyToOne(() => Lightcone)
   lightcone!: Lightcone;
-  @OneToMany(() => Effect, effect => effect.lcMove)
+  @OneToMany(() => Effect, (effect) => effect.lcMove)
   effects = new Collection<Effect>(this);
 }
 
@@ -243,7 +251,10 @@ export class LightconeMove {
 // ==========================================================
 
 @Entity({ tableName: 'effects' })
-@Check({ expression: '(move_id IS NOT NULL)::int + (relic_move_id IS NOT NULL)::int + (lc_move_id IS NOT NULL)::int + (eidolon_id IS NOT NULL)::int + (trace_id IS NOT NULL)::int = 1' })
+@Check({
+  expression:
+    '(move_id IS NOT NULL)::int + (relic_move_id IS NOT NULL)::int + (lc_move_id IS NOT NULL)::int + (eidolon_id IS NOT NULL)::int + (trace_id IS NOT NULL)::int = 1',
+})
 export class Effect {
   @PrimaryKey()
   effectId?: number;
@@ -308,7 +319,9 @@ export class TeamPreset {
   @Property({ onUpdate: () => new Date(), nullable: true })
   updatedAt: Date & Opt = new Date();
 
-  @OneToMany(() => TeamMember, member => member.teamPreset, { cascade: [Cascade.ALL] })
+  @OneToMany(() => TeamMember, (member) => member.teamPreset, {
+    cascade: [Cascade.ALL],
+  })
   members = new Collection<TeamMember>(this);
 }
 
@@ -323,10 +336,16 @@ export class TeamMember {
   @Property()
   slotIndex!: number; // 1-4 position in team
 
-  @ManyToOne(() => Character, { name: 'character_character_id', nullable: true })
+  @ManyToOne(() => Character, {
+    name: 'character_character_id',
+    nullable: true,
+  })
   character?: Character;
 
-  @ManyToOne(() => Lightcone, { name: 'lightcone_lightcone_id', nullable: true })
+  @ManyToOne(() => Lightcone, {
+    name: 'lightcone_lightcone_id',
+    nullable: true,
+  })
   lightcone?: Lightcone;
 
   @Property({ type: DecimalType, precision: 6, scale: 2 })
@@ -345,7 +364,7 @@ export class Session {
   @Property({ nullable: true })
   sessionName?: string;
 
-  @OneToMany(() => SessionEntity, se => se.session)
+  @OneToMany(() => SessionEntity, (se) => se.session)
   entities = new Collection<SessionEntity>(this);
 }
 
@@ -358,7 +377,7 @@ export class SessionEntity {
   session!: Session;
 
   @Enum(() => EntityType)
-  type!: EntityType; 
+  type!: EntityType;
 
   @ManyToOne(() => Character, { nullable: true })
   sourceCharacter?: Character;
@@ -369,7 +388,7 @@ export class SessionEntity {
 
   // 1. Screen Speed (The "Floor" input by user)
   @Property({ type: DecimalType, precision: 6, scale: 2 })
-  initialDisplaySpeed!: string; 
+  initialDisplaySpeed!: string;
 
   // 2. Base Speed (Hidden, for % math)
   @Property({ type: DecimalType, precision: 6, scale: 2 })
@@ -378,11 +397,11 @@ export class SessionEntity {
   @Property({ type: DecimalType, precision: 10, scale: 4, default: 0 })
   currentActionValue: string = '0';
 
-  @OneToMany(() => SessionActiveEffect, ae => ae.targetEntity)
+  @OneToMany(() => SessionActiveEffect, (ae) => ae.targetEntity)
   activeEffects = new Collection<SessionActiveEffect>(this);
 
   // Tracks things like "blade_enhanced_state" stacks
-  @OneToMany(() => SessionResource, sr => sr.entity)
+  @OneToMany(() => SessionResource, (sr) => sr.entity)
   resources = new Collection<SessionResource>(this);
 }
 
@@ -393,7 +412,7 @@ export class SessionResource {
   @ManyToOne(() => SessionEntity)
   entity!: SessionEntity;
   @Property()
-  resourceName!: string; 
+  resourceName!: string;
   @Property({ type: 'integer', default: 0 })
   value: number = 0;
 }
@@ -411,5 +430,5 @@ export class SessionActiveEffect {
   @Property({ nullable: true })
   turnsRemaining?: number;
   @Property({ type: DecimalType, precision: 10, scale: 4 })
-  snapshotValue!: string; 
+  snapshotValue!: string;
 }

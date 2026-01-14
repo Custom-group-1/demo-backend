@@ -6,7 +6,6 @@ import { User } from '../../entities/User';
 import { UserController } from './user.controller';
 
 describe('user controller', () => {
-
   let userController: UserController;
   let orm: MikroORM;
 

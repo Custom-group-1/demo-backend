@@ -13,7 +13,7 @@ export class UserResponseDto {
 
   constructor(user: User) {
     // Map từ Entity (Viết hoa) sang DTO (Viết thường)
-    this.id = user.Id!; 
+    this.id = user.Id!;
     this.name = user.name;
     this.createdAt = user.createdAt as Date;
   }

@@ -7,10 +7,13 @@ export class VerifyCodeDto {
   @IsNotEmpty()
   email: string;
 
-  @ApiProperty({ example: '123456', description: 'The 6-digit verification code' })
+  @ApiProperty({
+    example: '123456',
+    description: 'The 6-digit verification code',
+  })
   @IsString()
   @IsNotEmpty()
   // Assuming code is 6 digits? Remove Length decorator if it varies.
-  @Length(4, 10) 
+  @Length(4, 10)
   code: string;
 }
