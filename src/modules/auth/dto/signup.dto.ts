@@ -5,7 +5,7 @@ export class SignupDto {
   @ApiProperty({ example: 'Trailblazer', description: 'User display name' })
   @IsString()
   @IsNotEmpty()
-  username: string;
+  name: string;
 
   @ApiProperty({ example: 'trailblazer@astral.express' })
   @IsEmail()
@@ -18,3 +18,4 @@ export class SignupDto {
   @MinLength(6, { message: 'Password must be at least 6 characters long' })
   password: string;
 }
+
