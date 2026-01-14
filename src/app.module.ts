@@ -11,6 +11,7 @@ import { RelicSetModule } from './modules/relic-set/relic-set.module';
 import { MoveModule } from './modules/move/move.module';
 import { EffectModule } from './modules/effect/effect.module';
 import { TeamPresetModule } from './modules/team-preset/team-preset.module';
+import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
   imports: [
@@ -22,7 +23,8 @@ import { TeamPresetModule } from './modules/team-preset/team-preset.module';
     RelicSetModule,
     MoveModule,
     EffectModule,
-    TeamPresetModule
+    TeamPresetModule,
+    AuthModule,
   ],
   controllers: [AppController, UserController],
   providers: [AppService, Logger],
